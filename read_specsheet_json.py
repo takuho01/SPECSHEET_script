@@ -13,16 +13,12 @@ def read_excel_sheet(file_path, sheet_name):
         return None
 
 
-def read_excel_to_json(file_path):
+def read_excel_to_json(file_path, n2n_data):
     excel_sheet_data = {}
-    sheet_names = ['n2n', 'Connections']
+    sheet_names = ['Connections']
 
     data_frame = read_excel_sheet(file_path, sheet_names[0])
-    sheet_data = process_n2n_sheet(data_frame)
-    excel_sheet_data['n2n_sheet'] = sheet_data
-
-    data_frame = read_excel_sheet(file_path, sheet_names[1])
-    sheet_data = process_connections_sheet(data_frame, excel_sheet_data['n2n_sheet']['n2n_data'])
+    sheet_data = process_connections_sheet(data_frame, n2n_data)
     excel_sheet_data['Connections_sheet'] = sheet_data
 
     return excel_sheet_data
@@ -73,10 +69,10 @@ def process_connections_sheet(data_frame, n2n_data):
         n2n_list = []
         for tgt in range(col_start_position[1], len(data_frame.columns)):
             tgt_yn_list.append(data_frame.iloc[init, tgt])
-            if data_frame.iloc[init, tgt] == 'y':
+            if data_frame.iloc[init, tgt] in ['y', 'Y']:
                 tgt_list.append(data_frame.iloc[target_position[0], tgt])
             for n2n in n2n_data:
-                if data_frame.iloc[init, tgt] == 'y':
+                if data_frame.iloc[init, tgt] in ['y', 'Y']:
                     if data_frame.iloc[target_position[0], tgt] == n2n['n2n_target']:
                         n2n_list.append(n2n['n2n_to'])
         if len(n2n_list) == 0: n2n_check_done_flag = True
@@ -156,7 +152,14 @@ def write_excel_sheet(file_path, sheet_name, sheet_data):
     df = pd.DataFrame(sheet_data)
     df.to_excel(file_path,sheet_name=sheet_name, header=None,index=None)
 
-# Example usage
+
+top_sheet_data = {}
+
+output_excel = read_excel_sheet('CODE/SPECSHEET_script/sample_top.xlsx','Memmap')
+top_sheet_data['Memmap_sheet'] = process_memmap_sheet(output_excel)
+output_excel = read_excel_sheet('CODE/SPECSHEET_script/sample_top.xlsx','n2n')
+top_sheet_data['n2n_sheet'] = process_n2n_sheet(output_excel)
+
 all_excel_data = {}
 
 file_path_list = {
@@ -164,16 +167,12 @@ file_path_list = {
     'B': 'CODE/SPECSHEET_script/sampleB.xlsx',
     }
 
+
 for key, value in file_path_list.items():
-    excel_data = read_excel_to_json(value)
+    excel_data = read_excel_to_json(value, top_sheet_data['n2n_sheet']['n2n_data'])
     all_excel_data[key] = excel_data
     show_excel_data(all_excel_data[key])
 
-
-top_sheet_data = {}
-
-output_excel = read_excel_sheet('CODE/SPECSHEET_script/sample_top.xlsx','Memmap')
-top_sheet_data['Memmap_sheet'] = process_memmap_sheet(output_excel)
 
 
 
