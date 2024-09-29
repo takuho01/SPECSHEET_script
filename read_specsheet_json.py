@@ -67,6 +67,10 @@ def process_connections_sheet(data_frame, n2n_data):
         tgt_list = []
         tgt_yn_list = []
         n2n_list = []
+        n2n_initiator_flag = False
+        for n2n in n2n_data:
+            if n2n['n2n_to'] == data_frame.iloc[init, initiator_position[1]]:
+                n2n_initiator_flag = True
         for tgt in range(col_start_position[1], len(data_frame.columns)):
             tgt_yn_list.append(data_frame.iloc[init, tgt])
             if data_frame.iloc[init, tgt] in ['y', 'Y']:
@@ -80,6 +84,7 @@ def process_connections_sheet(data_frame, n2n_data):
         
         sheet_data['initiator_data'].append({
             'initiator_name': data_frame.iloc[init, initiator_position[1]],
+            'n2n_initiator_flag': n2n_initiator_flag,
             'target_list': tgt_list,
             'tgt_yn_list': [],
             'n2n_list': n2n_list,
@@ -190,11 +195,13 @@ connect_output_data = [
     [memmap['NOC'] for memmap in top_sheet_data['Memmap_sheet']['memmap_data']],
     [memmap['target'] for memmap in top_sheet_data['Memmap_sheet']['memmap_data']]
 ]
-for tgt_yn in top_sheet_data['Connections_sheet']['initiator_data']:
-    connect_output_data.append(tgt_yn['tgt_yn_list'])
 
-# Convert connect_output_data to a DataFrame
-initiator_names = [initiator['initiator_name'] for initiator in top_sheet_data['Connections_sheet']['initiator_data']]
+initiator_names = []
+for initiator in top_sheet_data['Connections_sheet']['initiator_data']:
+    if initiator['n2n_initiator_flag'] == False:
+        connect_output_data.append(initiator['tgt_yn_list'])
+        initiator_names.append(initiator['initiator_name'])
+
 initiator_names.insert(0, 'NOC')
 initiator_names.insert(1, 'Target')
 
