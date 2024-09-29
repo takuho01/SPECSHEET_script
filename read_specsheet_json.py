@@ -157,21 +157,17 @@ def write_excel_sheet(file_path, sheet_name, sheet_data):
     df.to_excel(file_path,sheet_name=sheet_name, header=None,index=None)
 
 # Example usage
-
 all_excel_data = {}
-file_path = 'CODE/SPECSHEET_script/sampleA.xlsx'
-excel_data = read_excel_to_json(file_path)
-all_excel_data['A'] = excel_data
 
+file_path_list = {
+    'A': 'CODE/SPECSHEET_script/sampleA.xlsx', 
+    'B': 'CODE/SPECSHEET_script/sampleB.xlsx',
+    }
 
-file_path = 'CODE/SPECSHEET_script/sampleB.xlsx'
-excel_data = read_excel_to_json(file_path)
-all_excel_data['B'] = excel_data
-
-
-show_excel_data(all_excel_data['A'])
-show_excel_data(all_excel_data['B'])
-
+for key, value in file_path_list.items():
+    excel_data = read_excel_to_json(value)
+    all_excel_data[key] = excel_data
+    show_excel_data(all_excel_data[key])
 
 
 top_sheet_data = {}
@@ -182,8 +178,8 @@ top_sheet_data['Memmap_sheet'] = process_memmap_sheet(output_excel)
 
 
 top_sheet_data['Connections_sheet'] = {'initiator_data': []}
-top_sheet_data['Connections_sheet']['initiator_data'].extend(all_excel_data['A']['Connections_sheet']['initiator_data'])
-top_sheet_data['Connections_sheet']['initiator_data'].extend(all_excel_data['B']['Connections_sheet']['initiator_data'])
+for key, value in file_path_list.items():
+    top_sheet_data['Connections_sheet']['initiator_data'].extend(all_excel_data[key]['Connections_sheet']['initiator_data'])
 
 show_excel_data(top_sheet_data)
 
